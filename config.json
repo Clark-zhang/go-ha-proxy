@@ -1,104 +1,30 @@
-{"Configs": 
-    {       
-       "ProxyList":
-       [
-               {
-               				 "Name":"RRTestA",
-                       "Src": "",
-                       "SrcPort": "9000",
-                       "Mode":"tcp",
-                       "Type":"Weight",                       
-                       "CheckTime":1,                       
-                       "DstList": 
-                       [ 
-	                       {
-	                       	 "Name":"MatisVM",
-	                         "Dst":"10.7.9.59",
-	                         "DstPort": "80",
-	                         "Weight":1,
-	                         "Check":true
-	                       },
-	                       {
-	                         "Name":"Outsite",
-	                         "Dst":"www.sbiec.com",
-	                         "DstPort": "80",
-	                         "Weight":2,
-	                         "Check":true
-	                       },
-	                       {
-	                       	 "Name":"DemoVM",
-	                         "Dst":"10.7.9.53",
-	                         "DstPort": "80",
-	                         "Weight":2, 
-	                         "Check":true
-	                       }
-                       ]
-               },
-               {
-               				 "Name":"SourceTest",
-                       "Src": "",
-                       "SrcPort": "9001",
-                       "Mode":"tcp",
-                       "Type":"Source",
-                       "KeepAlive":5,
-                       "CheckTime":1,                       
-                       "DstList": 
-                       [
-	                       {
-	                       	 "Name":"MatisVM",
-	                         "Dst":"10.7.9.59",
-	                         "DstPort": "80",
-	                         "Weight":1,
-	                         "Check":true
-	                       },
-	                       {
-	                         "Name":"Outsite",
-	                         "Dst":"www.sbiec.com",
-	                         "DstPort": "80",
-	                         "Weight":2,
-	                         "Check":true
-	                       },
-	                       {
-	                       	 "Name":"DemoVM",
-	                         "Dst":"10.7.9.53",
-	                         "DstPort": "80",
-	                         "Weight":3,
-	                         "Check":true
-	                       }
-                       ]
-               },
-               {
-               				 "Name":"HealthTest",
-                       "Src": "",
-                       "SrcPort": "9003",
-                       "Mode":"tcp",
-                       "Type":"LeastConn",                       
-                       "CheckTime":1,                       
-                       "DstList": 
-                       [ 
-	                       {
-	                       	 "Name":"MatisVM",
-	                         "Dst":"10.7.9.59",
-	                         "DstPort": "80",
-	                         "Weight":1,
-	                         "Check":true
-	                       },
-	                       {
-	                         "Name":"Outsite",
-	                         "Dst":"www.sbiec.com",
-	                         "DstPort": "80",
-	                         "Weight":2,
-	                         "Check":true
-	                       },
-	                       {
-	                       	 "Name":"DemoVM",
-	                         "Dst":"10.7.9.53",
-	                         "DstPort": "80",
-	                         "Weight":2, 
-	                         "Check":true
-	                       }
-                       ]
-               }
-       ]
-    }
+{
+  "Configs": {
+    "ProxyList": [
+      {
+        "Name": "Test",
+        "Src": "",
+        "SrcPort": "9000",
+        "Mode": "tcp",
+        "Type": "RoundRobin",
+        "CheckTime": 10,
+        "DstList": [
+          {
+            "Name": "9001",
+            "Dst": "127.0.0.1",
+            "DstPort": "9001",
+            "Weight": 1,
+            "Check": true
+          },
+          {
+            "Name": "9002",
+            "Dst": "127.0.0.1",
+            "DstPort": "9002",
+            "Weight": 1,
+            "Check": true
+          }
+        ]
+      }
+    ]
+  }
 }

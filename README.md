@@ -1,6 +1,10 @@
 # Introduction:
   This go-ha-proxy is simple reverse proxy using Golang.
-  
+
+  Original fork from [matishsiao/go-ha-proxy](https://github.com/matishsiao/go-ha-proxy)
+
+  I have reorganize the project from matishsia to make it work on go1.9.2. Also add some test to it. You could check **How to test** section to see how to test this project manually. Hope this project will help you to learn golang as it did for me. - Clark Zhang
+
 ## Version:
 
 version:0.0.2
@@ -12,7 +16,7 @@ version:0.0.2
 3.monitor server supported.
 
     http://localip:8080
-     
+
 4.command line params supported.
 
     ./GoHAProxy -help
@@ -22,20 +26,34 @@ version:0.0.2
 6.balance type:RoundRobin,Source,Weight,LeastConn
 
     RoundRobin:auto RR
-    
+
     Source:use source ip to balance service.
-    
+
     Weight:Use weight setting to balance.
-    
+
     LeastConn:Search least conn server to balance server.
 
-  
+
 ## Install:
 ```sh
-  go get github.com/matishsiao/GoHAProxy
-  go test
-  go build
+  go get github.com/Clark-zhang/go-ha-proxy
 ```
+
+## How to test (by Clark Zhang)
+
+### start two server
+cd test
+
+go run go_http_router.go -port=9001
+
+go run go_http_router.go -port=9002
+
+### start ha-proxy
+go run goHAProxy.go -debug=true
+
+### try to fetch data or kill one of the server
+curl localhost:9000
+
 
 ## Configuration format:
 
@@ -52,98 +70,21 @@ ProxyList:
       Mode:tcp,health
 
       Type:RoundRobin,Source,Weight,LeastConn
-   
+
       KeepAlive:1 second (keep alive server connection.Set zero will allways keep alive.)
 
       CheckTime:1 second (check health,default value:5 seconds.)
 
       DstList:Destination server list
-      
+
          DstNode:
 
          Name:server name
 
          Dst:server ip or domain
- 
+
          DstPort:destination port
 
          Weight:not use(when Weight HA mode done,will use this arg)
 
          Check:true or false(check node server health.If you set false,the GoHAProxy will set this server allways health.)
-
-## Configuration example:
-		{"Configs": 
-		    {       
-		       "ProxyList":
-		       [
-		               {
-		                       "Src": "",
-		                       "SrcPort": "9000",
-		                       "Mode":"tcp",
-		                       "Type":"RoundRobin",
-		                       "KeepAlive":60,
-		                       "CheckTime":1,                       
-		                       "DstList": 
-		                       [
-			                       {
-			                       	 "Name":"MatisVM",
-			                         "Dst":"10.7.9.59",
-			                         "DstPort": "80",
-			                         "Weight":1,
-			                         "Check":true
-			                       },
-			                       {
-			                         "Name":"Outsite",
-			                         "Dst":"www.yahoo.com",
-			                         "DstPort": "80",
-			                         "Weight":2,
-			                         "Check":true
-			                       },
-			                       {
-			                       	 "Name":"DemoVM",
-			                         "Dst":"10.7.9.53",
-			                         "DstPort": "80",
-			                         "Weight":3,
-			                         "Check":true
-			                       }
-		                       ]
-		               },
-		               {
-		                       "Src": "",
-		                       "SrcPort": "9001",
-		                       "Mode":"tcp",
-		                       "Type":"Source",
-		                       "KeepAlive":60,
-		                       "CheckTime":1,                       
-		                       "DstList": 
-		                       [
-			                       {
-			                       	 "Name":"MatisVM",
-			                         "Dst":"10.7.9.59",
-			                         "DstPort": "80",
-			                         "Weight":1,
-			                         "Check":true
-			                       },
-			                       {
-			                         "Name":"Outsite",
-			                         "Dst":"www.yahoo.com",
-			                         "DstPort": "80",
-			                         "Weight":2,
-			                         "Check":true
-			                       },
-			                       {
-			                       	 "Name":"DemoVM",
-			                         "Dst":"10.7.9.53",
-			                         "DstPort": "80",
-			                         "Weight":3,
-			                         "Check":true
-			                       }
-		                       ]
-		               }
-		       ]
-		    }
-		}
-
-
-##License and Copyright
-This software is Copyright 2012-2014 Matis Hsiao.

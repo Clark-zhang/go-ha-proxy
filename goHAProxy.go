@@ -7,11 +7,12 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	haProxy "github.com/Clark-zhang/go-ha-proxy/src/ha-proxy"
 )
 
 var version string = "0.0.2"
-var proxyServer ProxyServer
-var configInfo ConfigInfo
+var proxyServer haProxy.ProxyServerStruct
+var configInfo haProxy.ConfigInfoStruct
 var help *bool
 
 func main() {
@@ -35,17 +36,24 @@ func main() {
 	if *configInfo.Version {
 		fmt.Println("GoHAProxy Version", version)
 		os.Exit(0)
-	}	
-	ok,haConfig := loadConfigs()
-	if ok {			
-		for _, proxy := range haConfig.Configs.ProxyList {
-			FS := new(ForwardServer)
-			proxyServer.ServerList = append(proxyServer.ServerList, FS)
-			go FS.Listen(proxy)
-		}	
 	}
-	
-	go Monitor()
+	ok,haConfig := loadConfigs()
+	if ok {
+		for _, proxy := range haConfig.Configs.ProxyList {
+			FS := new(haProxy.ForwardServer)
+			proxyServer.ServerList = append(proxyServer.ServerList, FS)
+
+			//依赖注入
+			haProxy.ProxyServer = proxyServer
+
+			go FS.Listen(proxy)
+		}
+	}
+
+	//依赖注入
+	haProxy.ConfigInfo = configInfo
+
+	go haProxy.Monitor()
 	for {
 		configWatcher()
 		time.Sleep(500 * time.Millisecond)
@@ -71,46 +79,46 @@ func configWatcher() {
 		configInfo.Size = info.Size()
 		configInfo.ModTime = info.ModTime()
 		ok,haConfig := loadConfigs()
-		if ok {			
+		if ok {
 			//檢查有沒有移除掉的設定有的話就移除
 			for k, sProxy := range proxyServer.ServerList {
 				oldProxy := true
 				for _, proxy := range haConfig.Configs.ProxyList {
 					if *configInfo.Debug {
-						fmt.Printf("Delete PName:%s srvProxyName:%s \n", proxy.Name, sProxy.srvProxy.Name)
+						fmt.Printf("Delete PName:%s SrvProxyName:%s \n", proxy.Name, sProxy.SrvProxy.Name)
 					}
-					if proxy.Name == sProxy.srvProxy.Name {
+					if proxy.Name == sProxy.SrvProxy.Name {
 						oldProxy = false
 						break
 					}
 				}
-			
+
 				if oldProxy {
 					if *configInfo.Debug {
-						fmt.Printf("Delete Proxy[%v]: %v\n", k, sProxy.srvProxy.Name)
+						fmt.Printf("Delete Proxy[%v]: %v\n", k, sProxy.SrvProxy.Name)
 					}
 					sProxy.Stop()
 					proxyServer.ServerList = proxyServer.ServerList[:k+copy(proxyServer.ServerList[k:], proxyServer.ServerList[k+1:])]
 
 				}
 			}
-	
+
 			//檢查有沒有新的設定
 			for _, proxy := range haConfig.Configs.ProxyList {
 				newProxy := true
 				for k, sProxy := range proxyServer.ServerList {
 					if *configInfo.Debug {
-						fmt.Printf("Check Add PName[%d]:%s srvProxyName:%s \n", k, proxy.Name, sProxy.srvProxy.Name)
+						fmt.Printf("Check Add PName[%d]:%s SrvProxyName:%s \n", k, proxy.Name, sProxy.SrvProxy.Name)
 					}
-					if proxy.Name == sProxy.srvProxy.Name {
+					if proxy.Name == sProxy.SrvProxy.Name {
 						proxyServer.ServerList[k].Reload(proxy)
 						newProxy = false
 						break
 					}
 				}
 				if newProxy {
-					FS := new(ForwardServer)
-					proxyServer.ServerList = append(proxyServer.ServerList, FS)					
+					FS := new(haProxy.ForwardServer)
+					proxyServer.ServerList = append(proxyServer.ServerList, FS)
 					if *configInfo.Debug {
 						fmt.Printf("Add New Proxy: %v\n", proxy)
 					}
@@ -123,14 +131,14 @@ func configWatcher() {
 	defer file.Close()
 }
 
-func loadConfigs() (bool,HAConfig) {
+func loadConfigs() (bool, haProxy.HAConfig) {
 	fmt.Printf("GoHAProxy load config file:%s\n", *configInfo.FileName)
 	file, e := ioutil.ReadFile(*configInfo.FileName)
 	if e != nil {
 		fmt.Printf("Load GoHAProxy config error: %v\n", e)
 		os.Exit(1)
 	}
-	var haConfig HAConfig
+	var haConfig haProxy.HAConfig
 	err := json.Unmarshal(file, &haConfig)
 	if err != nil {
 		fmt.Printf("Config load error:%v \n",err)
