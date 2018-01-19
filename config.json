@@ -6,7 +6,7 @@
         "Src": "",
         "SrcPort": "9000",
         "Mode": "tcp",
-        "Type": "RoundRobin",
+        "Type": "LeastConn",
         "CheckTime": 10,
         "DstList": [
           {

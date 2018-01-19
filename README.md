@@ -27,7 +27,7 @@ version:0.0.2
 
     RoundRobin:auto RR
 
-    Source:use source ip to balance service.
+    Source:use source ip to balance service. MAC下可能会导致cpu100%，请慎用。
 
     Weight:Use weight setting to balance.
 
